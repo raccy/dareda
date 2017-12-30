@@ -2,7 +2,7 @@
   "name": "dareda",
   "version": "1.0.0",
   "description": "Daredesuka?",
-  "main": "index.js",
+  "main": "main.js",
   "author": "IGARASHI Makoto",
   "license": "MIT",
   "devDependencies": {
