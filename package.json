@@ -1,0 +1,14 @@
+{
+  "name": "dareda",
+  "version": "1.0.0",
+  "description": "Daredesuka?",
+  "main": "index.js",
+  "author": "IGARASHI Makoto",
+  "license": "MIT",
+  "devDependencies": {
+    "coffeescript": "^2.1.0",
+    "electron": "^1.7.10",
+    "node-sass": "^4.7.2",
+    "pug": "^2.0.0-rc.4"
+  }
+}
