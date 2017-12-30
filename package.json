@@ -6,9 +6,12 @@
   "author": "IGARASHI Makoto",
   "license": "MIT",
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
     "coffeescript": "^2.1.0",
     "electron": "^1.7.10",
     "node-sass": "^4.7.2",
-    "pug": "^2.0.0-rc.4"
+    "pug-cli": "^1.0.0-alpha6"
   }
 }
