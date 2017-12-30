@@ -52,3 +52,13 @@ task 'build', 'build all', (options) ->
   await invoke 'build:css'
   await invoke 'build:js'
   await invoke 'build:package'
+
+task 'run', 'run electron', (options) ->
+  ps = childProcess.spawn('yarn', ['run', 'electron', 'app'], {shell: true})
+  ps.stdout.on 'data', (data) ->
+    console.log(String(data))
+  ps.stderr.on 'data', (data) ->
+    console.warn(String(data))
+  ps.on 'error', (error) ->
+    console.error(String(error))
+    throw error
