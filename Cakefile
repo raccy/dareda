@@ -29,7 +29,9 @@ task 'build:html', 'build html', (options) ->
 
 task 'build:css', 'build css', (options) ->
   await mkdirIfNotExists(dstDir)
-  {stdout, stderr} = await exec("yarn run node-sass -o #{dstDir} -r #{srcDir}")
+  {stdout, stderr} = await exec("yarn run node-sass \
+      --importer node_modules/node-sass-package-importer/dist/cli.js \
+      -o #{dstDir} -r #{srcDir}")
   console.log(stdout) if stdout?
   console.warn(stderr) if stderr?
 

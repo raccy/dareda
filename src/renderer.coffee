@@ -1,5 +1,6 @@
 import { h, app } from 'hyperapp'
 import { ipcRenderer } from 'electron'
+import Login from './renderer/login'
 
 state =
   filterText: ''
@@ -37,39 +38,10 @@ actions =
     ipcRenderer.on 'search-result', (event, arg) ->
       actions.updateSearchResults(arg)
 
-searchTypes = [
-  {
-    id: 'uid'
-    name: 'アカウント名'
-    atrribute: 'uid'
-    type: 'text'
-    pattern: /[\w-]+/
-    praceholder: 'username...'
-  }
-]
-
-Input = ({id, name, attribute, type, pattern, praceholder, updateFilter}) ->
-  <div>
-    <label>{"#{name}(#{attribute})"}</label>
-    <input
-      key={id}
-      type={type}
-      pattern={pattern}
-      praceholder={placeholder}
-      onchange={({target:{value}}) ->
-        updateFilter(attribute, value)
-      }
-    />
-  </div>
-
-
-
 view = (state, actions) ->
   <main>
-    <label>名前(ja)</label>
-    <input
-      type="text"
-    />
+    <Login login={actions.login} />
   </main>
 
 app(state, actions, view, document.body)
+console.log(document.body)

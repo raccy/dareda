@@ -1,0 +1,2 @@
+ldap:
+  url: "ldap://localhost/"
