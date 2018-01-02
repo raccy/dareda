@@ -1,4 +1,20 @@
 import { h } from 'hyperapp'
+import { ipcRenderer } from 'electron'
+
+export state = {
+  loginStatus: 'waiting'
+}
+
+export actions = {
+  updateLoginStatus: (loginStatus) -> (state) ->
+    {loginStatus: loginStatus}
+  login: (arg) -> (state, actions) ->
+    actions.updateLoginStatus('running')
+    ipcRenderer.send 'login', arg
+    return
+  preLogin: -> (state, actions) ->
+    ipcRenderer.on 'login-result', (event, arg) ->
+}
 
 InputUsername = ->
   <fieldset>
@@ -23,8 +39,7 @@ InputPassword = ->
     />
   </fieldset>
 
-
-export default Login = ({login}) ->
+export Login = ({login}) ->
   <div>
     <h2>ログイン</h2>
     <form onsumbit={(event) ->
@@ -40,3 +55,9 @@ export default Login = ({login}) ->
       <button type="submit">ログイン</button>
     </form>
   </div>
+
+export default {
+  state: state
+  actions: actions
+  Login: Login
+}

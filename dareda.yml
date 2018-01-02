@@ -1,2 +1,4 @@
 ldap:
-  url: "ldap://localhost/"
+  url: "ldap://localhost"
+  user_base: ou=People,dc=example,dc=jp
+  group_base: ou=Group,dc=example,dc=jp

@@ -1,11 +1,13 @@
 import { h, app } from 'hyperapp'
 import { ipcRenderer } from 'electron'
-import Login from './renderer/login'
+import login, { Login } from './renderer/login'
 
-state =
+state = {
+  login.state...
   filterText: ''
   filterList: []
   searchResult: []
+}
 
 filterNormalize = (filterList) ->
   attributeList = []
@@ -16,7 +18,10 @@ filterNormalize = (filterList) ->
     else
       false
 
-actions =
+actions = {
+  login.actions...
+
+
   updateFilterList: (filterList) -> (state) -> {filterList: filterList}
   updateFilterText: (filterText) -> (state) -> {filterText: filterText}
   updateSearchResults: (searchResult) -> (state) -> {searchResult: searchResult}
@@ -37,6 +42,7 @@ actions =
   onSearchResult: -> (state, actions) ->
     ipcRenderer.on 'search-result', (event, arg) ->
       actions.updateSearchResults(arg)
+}
 
 view = (state, actions) ->
   <main>

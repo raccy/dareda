@@ -2,6 +2,16 @@ import {app, BrowserWindow} from 'electron'
 
 import path from 'path'
 import url from 'url'
+import fs from 'fs'
+
+import yaml from 'js-yaml'
+
+import LdapSearcher from './main/ldap_searcher'
+
+fs.readFile path.join(__dirname, '..', 'dareda.yml'), (err, data) ->
+  config = yaml.safeLoad(data)
+  console.log(config)
+  ldapSearcher = new LdapSearcher(config.ldap)
 
 mainWindow = null
 
