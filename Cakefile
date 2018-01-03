@@ -1,9 +1,9 @@
 fs = require 'fs'
 path = require 'path'
 util = require 'util'
-childProcess = require 'child_process'
+child_process = require 'child_process'
 
-exec = util.promisify(childProcess.exec)
+exec = util.promisify(child_process.exec)
 mkdir = util.promisify(fs.mkdir)
 stat = util.promisify(fs.stat)
 copyFile = util.promisify ({src, dest}, callback) ->
@@ -23,7 +23,8 @@ mkdirIfNotExists = (path) ->
 
 task 'build:html', 'build html', (options) ->
   await mkdirIfNotExists(dstDir)
-  {stdout, stderr} = await exec("yarn run pug -o #{dstDir} #{srcDir}")
+  {stdout, stderr} = await exec("yarn run pug \
+      -o #{dstDir} #{srcDir}")
   console.log(stdout) if stdout?
   console.warn(stderr) if stderr?
 
@@ -37,8 +38,9 @@ task 'build:css', 'build css', (options) ->
 
 task 'build:js', 'build js', (options) ->
   await mkdirIfNotExists(dstDir)
-  {stdout, stderr} = await exec(
-    "yarn run coffee -b -c -t -o #{dstDir} #{srcDir}")
+  {stdout, stderr} = await exec("yarn run coffee \
+      -b -c -t \
+      -o #{dstDir} #{srcDir}")
   console.log(stdout) if stdout?
   console.warn(stderr) if stderr?
 
@@ -55,8 +57,60 @@ task 'build', 'build all', (options) ->
   await invoke 'build:js'
   await invoke 'build:package'
 
+task 'watch:html', 'watch html', (options) ->
+  cp = child_process.spawn "yarn run pug \
+      -w \
+      -o #{dstDir} #{srcDir}"
+  , [], {shell: true}
+  cp.stdout.on 'data', (data) ->
+    console.log(String(data))
+  cp.stderr.on 'data', (data) ->
+    console.log(String(data))
+  cp.on 'error', (error) ->
+    console.error(String(error))
+    throw error
+  process.on 'SIGINT', ->
+    cp.kill()
+
+task 'watch:css', 'watch css', (options) ->
+  cp = child_process.spawn "yarn run node-sass \
+      -w \
+      --importer node_modules/node-sass-package-importer/dist/cli.js \
+      -o #{dstDir} -r #{srcDir}"
+  , [], {shell: true}
+  cp.stdout.on 'data', (data) ->
+    console.log(String(data))
+  cp.stderr.on 'data', (data) ->
+    console.log(String(data))
+  cp.on 'error', (error) ->
+    console.error(String(error))
+    throw error
+  process.on 'SIGINT', ->
+    cp.kill()
+
+task 'watch:js', 'watch js', (options) ->
+  cp = child_process.spawn "yarn run coffee \
+      -w \
+      -b -c -t \
+      -o #{dstDir} #{srcDir}"
+  , [], {shell: true}
+  cp.stdout.on 'data', (data) ->
+    console.log(String(data))
+  cp.stderr.on 'data', (data) ->
+    console.log(String(data))
+  cp.on 'error', (error) ->
+    console.error(String(error))
+    throw error
+  process.on 'SIGINT', ->
+    cp.kill()
+
+task 'watch', 'watch all', (options) ->
+  invoke 'watch:html'
+  invoke 'watch:css'
+  invoke 'watch:js'
+
 task 'run', 'run electron', (options) ->
-  ps = childProcess.spawn('yarn', ['run', 'electron', 'app'], {shell: true})
+  ps = child_process.spawn('yarn', ['run', 'electron', 'app'], {shell: true})
   ps.stdout.on 'data', (data) ->
     console.log(String(data))
   ps.stderr.on 'data', (data) ->
