@@ -71,7 +71,7 @@ export Login = ({error, status, login, watchLogin}) ->
     # reset password
     event.target.password.value = ''
   disabled = status isnt 'waiting'
-  <div id="login-form" oncreate={watchLogin}>
+  <div id="login" oncreate={watchLogin}>
     <h2>ログイン</h2>
     <LoginError error={error} />
     <form onsubmit={onsubmit}>
