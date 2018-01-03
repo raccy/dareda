@@ -10,8 +10,11 @@ import LdapSearcher from './main/ldap_searcher'
 
 fs.readFile path.join(__dirname, '..', 'dareda.yml'), (err, data) ->
   config = yaml.safeLoad(data)
-  console.log(config)
-  ldapSearcher = new LdapSearcher(config.ldap)
+  ldapSearcher = new LdapSearcher({
+    url: config.ldap.url
+    userBase: config.ldap.user_base
+    groupBase: config.ldap.group_base
+  })
 
 mainWindow = null
 
@@ -36,5 +39,3 @@ app.on 'window-all-closed', ->
 app.on 'activate', ->
   unless mainWindow?
     createWindow()
-
-console.log process.version

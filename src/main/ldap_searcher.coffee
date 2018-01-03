@@ -3,7 +3,6 @@ import ldap from 'ldapjs'
 
 export default class LdapSearcher
   constructor: ({@url, @userBase, @groupBase}) ->
-    console.log("@url: #{@url}")
     @client = ldap.createClient(url: @url)
     ipcMain.on 'login', @login
     ipcMain.on 'search', @search
@@ -11,12 +10,20 @@ export default class LdapSearcher
     ipcMain.on 'groups', @groups
 
   login: (event, {@username, @password}) =>
-    @dn = getUserDn(@username)
-    result = await @ldapLogin()
-    if result
-      event.sender.send 'login-result', true
-    else
-      event.sender.send 'login-result', false
+    @dn = @getUserDn(@username)
+    try
+      await @ldapLogin()
+      event.sender.send 'login-result', status: 'success'
+    catch error
+      switch
+        when error instanceof ldap.InvalidCredentialsError
+          event.sender.send 'login-result',
+            status: 'failure'
+            error: 'ユーザー名またはパスワードが違います。'
+        else
+          event.sender.send 'login-result',
+           status: 'error'
+           error: error.message
 
   search: (event, {filter}) =>
     @filter = @createFilter(filter)
@@ -67,12 +74,15 @@ export default class LdapSearcher
       new ldap.AndFilter(filters: list)
 
   ldapLogin: ->
+    console.log("login: #{@dn}")
     new Promise((resolve, reject) =>
-      @client.bind @dn, @password, (err) ->
+      @client.bind @dn, @password, (err) =>
         if err instanceof ldap.LDAPError
-          resolve(false)
+          console.log("faild to login")
+          reject(err)
         else
-          resolve(true)
+          console.log("succeeded to login")
+          resolve(@dn)
     )
 
   getUserDn: (username) ->

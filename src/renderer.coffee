@@ -1,6 +1,6 @@
-import { h, app } from 'hyperapp'
-import { ipcRenderer } from 'electron'
-import login, { Login } from './renderer/login'
+import {h, app} from 'hyperapp'
+import {ipcRenderer} from 'electron'
+import login, {Login} from './renderer/login'
 
 state = {
   login.state...
@@ -45,9 +45,14 @@ actions = {
 }
 
 view = (state, actions) ->
+  mainElement = if state.loginStatus is 'done'
+    <Search />
+  else
+    <Login error={state.loginError} status={state.loginStatus}
+      login={actions.login}  watchLogin={actions.watchLogin} />
+
   <main>
-    <Login login={actions.login} />
+    {mainElement}
   </main>
 
 app(state, actions, view, document.body)
-console.log(document.body)
