@@ -1,5 +1,5 @@
-import { h, app } from 'hyperapp'
-import { ipcRenderer } from 'electron'
+import {h, app} from 'hyperapp'
+import {ipcRenderer} from 'electron'
 
 state =
   filterText: ''
