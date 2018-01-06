@@ -82,7 +82,7 @@ export default class LdapSearcher
             attribute: filter.attr
             initial: filter.value
           )
-        when 'pertial'
+        when 'partial'
           new ldap.SubstringFilter(
             attribute: filter.attr
             any: [filter.value]
@@ -97,6 +97,9 @@ export default class LdapSearcher
             attribute: filter.attr
             value: filter.value
           )
+        else
+          null
+    list = (filter for filter in list when filter?)
 
     if list.length == 0
       return
