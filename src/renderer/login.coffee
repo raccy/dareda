@@ -18,7 +18,7 @@ export actions = {
     return
   watchLogin: -> (state, actions) ->
     ipcRenderer.on 'login-result', (event, {status, error}) ->
-      if status is 'success'
+      if status == 'success'
         actions.updateLoginError(undefined)
         actions.updateLoginStatus('done')
       else
@@ -70,7 +70,7 @@ export Login = ({error, status, login, watchLogin}) ->
     })
     # reset password
     event.target.password.value = ''
-  disabled = status isnt 'waiting'
+  disabled = status != 'waiting'
   <div id="login" oncreate={watchLogin}>
     <h2>ログイン</h2>
     <LoginError error={error} />

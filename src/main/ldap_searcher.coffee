@@ -68,7 +68,7 @@ export default class LdapSearcher
             attribute: filter.attr
             any: [filter.value]
           )
-    if list.length is 1
+    if list.length == 1
       list[0]
     else
       new ldap.AndFilter(filters: list)

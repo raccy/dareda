@@ -5,7 +5,7 @@ import search, {Search} from './renderer/search'
 
 state = {
   login.state...
-  search.actions...
+  search.state...
 }
 
 actions = {
@@ -14,9 +14,9 @@ actions = {
 }
 
 view = (state, actions) ->
-  mainElement = if state.loginStatus is 'done'
-    <Search filterText={state.filterText} results={state.results}
-      search={actions.search}/>
+  mainElement = if state.loginStatus == 'done'
+    <Search filterText={state.filterText} results={state.searchResults}
+      search={actions.search} watchResult={actions.watchResult}/>
   else
     <Login error={state.loginError} status={state.loginStatus}
       login={actions.login}  watchLogin={actions.watchLogin} />
