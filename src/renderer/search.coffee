@@ -1,4 +1,5 @@
 import {h} from 'hyperapp'
+import {ipcRenderer} from 'electron'
 
 export state = {
   filterText: ''
@@ -13,6 +14,7 @@ export actions = {
     {searchResults: searchResults}
 
   search: (filterList) -> (state, actions) ->
+    console.log filterList
     ipcRenderer.send 'filter-list', filterList
     return
 
@@ -38,51 +40,70 @@ TARGETS = [
 getParentForm = (node) ->
   if not node?
     return null
-  if node.tagName.downCase() == 'form'
+  if node.tagName.toLowerCase() == 'form'
     return node
   getParentForm(node.parentElement)
 
-parrentFormSubmit = (event) ->
-  getParentForm(event.targe)?.submit()
+searchSubmit = (form, search) ->
+  value = form.string.value
+  matching = form.matching.value
+  targets = (checkbox.value for checkbox in form.target when checkbox.checked)
+  filterList = for target in targets
+    {
+      attr: target
+      matching: matching
+      value: value
+    }
+  search(filterList)
 
 SearchInput = ({search}) ->
-  <form onsubmit={(event) ->
+  onsubmit = (event) ->
     event.preventDefault()
-    form = event.target
-    value = form.string.value
-    matching = form.matching.value
-    targets = (checkbox.value for checkbox in form.target when checkbox.checked)
-    filterList = for target in targets
-      {
-        attr: target
-        matching: matching
-        value: value
-      }
-    search(filterList)
-  }>
+    searchSubmit(event.target, search)
+  onchangeChild = (event) ->
+    searchSubmit(getParentForm(event.target), search)
+  <form class="form-horizontal" onsubmit={onsubmit}>
     <fieldset>
-      <label for="search-string">検索文字列</label>
-      <input id="search-string" type="text" name="string"
-         praceholder="アカウント名 or 名前" onchange={parrentFormSubmit} />
-      <label for="search-matching">一致形式</label>
-      <select id="search-matching" name="matching" onchange={parrentFormSubmit}>
-        <option value="exact">完全</option>
-        <option value="forward">前方</option>
-        <option value="partial">部分</option>
-        <option value="backward">後方</option>
-      </select>
-      <label>検索対象</label>
-      {
-        for target in TARGETS
-          <span key={target.attr}>
-            <input id={"search-target-#{target.id}"} type="checkbox"
-              name="target" onchange={parrentFormSubmit}
-              value={target.attr} checked />
-            <label for={"search-target-#{target.id}"}>
-              {"#{target.name}(#{target.uid})"}
-            </label>
-          </span>
-      }
+      <div class="form-group">
+        <div class="col-3">
+          <label class="form-label" for="search-string">検索文字列</label>
+        </div>
+        <div class="col-9">
+          <input id="search-string" class="form-input" type="text" name="string"
+             praceholder="ユーザー名 or 名前" onkeyup={onchangeChild} />
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-3">
+          <label class="form-label" for="search-matching">一致形式</label>
+        </div>
+        <div class="col-9">
+          <select id="search-matching" class="form-select" name="matching"
+            onchange={onchangeChild}>
+            <option value="exact">完全</option>
+            <option value="forward" selected>前方</option>
+            <option value="partial">部分</option>
+            <option value="backward">後方</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-3">
+          <label class="form-label">検索対象</label>
+        </div>
+        <div class="col-9">
+          {
+            for target in TARGETS
+              <label key={target.id} class="form-checkbox">
+                <input id={"search-target-#{target.id}"} type="checkbox"
+                  name="target" value={target.attr} checked
+                  onchange={onchangeChild} />
+                  <i class="form-icon"></i>
+                  {target.name}
+              </label>
+          }
+        </div>
+      </div>
     </fieldset>
   </form>
 

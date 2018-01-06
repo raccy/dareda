@@ -21,7 +21,7 @@ view = (state, actions) ->
     <Login error={state.loginError} status={state.loginStatus}
       login={actions.login}  watchLogin={actions.watchLogin} />
 
-  <main>
+  <main class="container">
     {mainElement}
   </main>
 
