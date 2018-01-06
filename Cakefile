@@ -90,7 +90,6 @@ task 'watch:css', 'watch css', (options) ->
 
 task 'watch:js', 'watch js', (options) ->
   cp = child_process.spawn "yarn run coffee \
-      -m
       -w \
       -b -c -t \
       -o #{dstDir} #{srcDir}"
