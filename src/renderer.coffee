@@ -15,7 +15,8 @@ actions = {
 
 view = (state, actions) ->
   mainElement = if state.loginStatus is 'done'
-    <Search filterList={state.filterList} filterText={state.filterText}/>
+    <Search filterText={state.filterText} results={state.results}
+      search={actions.search}/>
   else
     <Login error={state.loginError} status={state.loginStatus}
       login={actions.login}  watchLogin={actions.watchLogin} />

@@ -30,12 +30,16 @@ export actions = {
     return
   search: -> (state, actions) ->
     ipcRenderer.send 'filter-list', state.filterList
+  displayUser: (userDn) -> (state) ->
+    ipcRenderer.send ''
+
   onFilterText: -> (state, actions) ->
     ipcRenderer.on 'filter-text', (event, arg) ->
       actions.updateFilterText(arg)
   onSearchResult: -> (state, actions) ->
     ipcRenderer.on 'search-result', (event, arg) ->
       actions.updateSearchResults(arg)
+
 }
 
 
@@ -63,9 +67,41 @@ Input = ({id, name, attribute, type, pattern, praceholder, updateFilter}) ->
       }
     />
   </div>
-export Search = () ->
-  <div id="search">
 
+SerchInput = () ->
+
+ResultItem = ({result, displayUser}) ->
+  <tr onclick={-> displayUser(result.dn)}>
+    <td>{result.uid}</td>
+    <td>{result.name}</td>
+  </tr>
+
+Results = ({results, displayUser}) ->
+
+  <table>
+    <thead>
+      <tr>
+        <th>アカウント</th>
+        <th>名前</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        for result in results
+          <ResultItem key={relust.uid} result={result}
+              displayUser={displayUser}/>
+      }
+    </tbody>
+  </table>
+
+
+
+
+export Search = ({filterText, results, search, displayUser}) ->
+  <div id="search">
+    <SeachInput search={search}/>
+    <p>{filterText}</p>
+    <Result results={results} displayUser={displayUser} />
   </div>
 
 export default {
