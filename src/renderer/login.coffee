@@ -33,7 +33,8 @@ InputUsername = ({disabled}) ->
     </div>
     <div class="col-9">
       <input id="login-username" class="form-input" name="username"
-        type="text" require={true} pattern="[\w-]+" disabled={disabled} />
+        type="text" require={true} pattern="[\w-]+" disabled={disabled}
+        oncreate={(element) -> element.focus()} />
     </div>
   </div>
 
@@ -68,7 +69,7 @@ export Login = ({error, status, login, watchLogin}) ->
     # reset password
     event.target.password.value = ''
   disabled = status != 'waiting'
-  <div id="login" oncreate={watchLogin}>
+  <div key="login" id="login" oncreate={watchLogin}>
     <h2>ログイン</h2>
     <LoginError error={error} />
     <form class="form-horizontal" onsubmit={onsubmit}>

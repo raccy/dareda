@@ -25,26 +25,45 @@ export default class LdapSearcher
            status: 'error'
            error: error.message
 
-  search: (event, {filter}) =>
-    @filter = @createFilter(filter)
-    event.sender.send 'filter-text', @filter.toString()
+  search: (event, {filterList}) =>
+    filter = @createFilter(filterList)
+    defaultResult = {
+      filter: filter?.toString() or ''
+      entries: []
+      error: undefined
+    }
+    unless filter?
+      # no search
+      event.sender.send 'search-result', defaultResult
+      return
 
-    attributes = ['uid', 'displayName', 'displayName;lang-ja']
-    options = filter: @filter, attributes: attributes, sizeLimit: 10
+    attributes = ['uid', 'displayName', 'displayName;lang-ja',
+      'displayName;lang-ja;phonetic']
+    options = filter: filter, attributes: attributes, sizeLimit: 10
     @client.bind @dn, @password, (err) =>
       if err instanceof ldap.LDAPError
-        event.sender.send 'search-result', {err: err.message()}
+        event.sender.send 'search-result', {
+          defaultResult...
+          error: err.message()
+      }
         return
       entries = []
       @client.search @userBase, options, (err, res) ->
         if err instanceof ldap.LDAPError
-          event.sender.send 'search-result', {err: err.message()}
+          event.sender.send 'search-result', {
+            defaultResult...
+            error: err.message()
+          }
           return
         res.on 'searchEntry', (entry) ->
+          console.log(entry)
           entries.push(entry)
         res.on 'end', (result) ->
           console.log(entries)
-          event.sender.send 'search-result', {entries: entries}
+          event.sender.send 'search-result', {
+            defaultResult...
+            entries: entries
+          }
 
   user: (event, userDn) =>
 
@@ -52,11 +71,11 @@ export default class LdapSearcher
 
   createFilter: (filterList) ->
     list = for filter in filterList
-      switch filter.matchType
-        when 'perfect'
+      switch filter.matching
+        when 'exact'
           new ldap.EqualityFilter(
             attribute: filter.attr
-            value: value
+            value: filter.value
           )
         when 'forward'
           new ldap.SubstringFilter(
@@ -68,10 +87,24 @@ export default class LdapSearcher
             attribute: filter.attr
             any: [filter.value]
           )
+        when 'backward'
+          new ldap.SubstringFilter(
+            attribute: filter.attr
+            final: filter.value
+          )
+        when 'approximate'
+          new ldap.ApproximateFilter(
+            attribute: filter.attr
+            value: filter.value
+          )
+
+    if list.length == 0
+      return
+
     if list.length == 1
       list[0]
     else
-      new ldap.AndFilter(filters: list)
+      new ldap.OrFilter(filters: list)
 
   ldapLogin: ->
     console.log("login: #{@dn}")

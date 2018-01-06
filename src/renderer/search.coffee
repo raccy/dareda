@@ -2,35 +2,49 @@ import {h} from 'hyperapp'
 import {ipcRenderer} from 'electron'
 
 export state = {
-  filterText: ''
-  searchResults: []
+  searchFilter: ''
+  searchEntries: []
+  searchError: undefined
 }
 
 export actions = {
-  updateFilterText: (filterText) -> (state) ->
-    {filterText: filterText}
+  updateSearch: ({filter, entries, error}) -> (state) ->
+    {
+      searchFilter: filter
+      searchEntries: entries
+      searchError: error
+    }
 
   updateSearchResults: (searchResults) -> (state) ->
     {searchResults: searchResults}
 
   search: (filterList) -> (state, actions) ->
     console.log filterList
-    ipcRenderer.send 'filter-list', filterList
+    ipcRenderer.send 'search', filterList: filterList
     return
 
   displayUser: (dn) -> (state) ->
     ipcRenderer.send 'display-user', dn
     return
 
-  watchResult: -> (state, actions) ->
+  watchSearch: -> (state, actions) ->
+    console.log 'watch search'
     ipcRenderer.on 'search-result', (event, arg) ->
-      actions.updateFilterText(arg.filterText)
-      actions.updateSearchResults(arg.searchResults)
+      console.log arg
+      actions.updateSearch(arg)
     return
 }
 
-TARGETS = [
-  {id: 'uid', attr: 'uid', name: 'アカウント名'}
+MATCHINGS = [
+  {id: 'exact', name: '完全一致', selected: false}
+  {id: 'forward', name: '前方一致', selected: true}
+  {id: 'partial', name: '部分一致', selected: false}
+  {id: 'backward', name: '後方一致', selected: false}
+  {id: 'approximate', name: '曖昧検索', selected: false}
+]
+
+ATTRIBUTES = [
+  {id: 'uid', attr: 'uid', name: 'ユーザー名'}
   {id: 'displayNam', attr: 'displayName', name: '名前(英字)'}
   {id: 'displayName_ja', attr: 'displayName;lang-ja', name: '名前(漢字)'}
   {id: 'displayName_lang_ja_phonetic', attr: 'displayName;lang-ja;phonetic', \
@@ -46,8 +60,11 @@ getParentForm = (node) ->
 
 searchSubmit = (form, search) ->
   value = form.string.value
+  unless value
+    search([])
+    return
   matching = form.matching.value
-  targets = (checkbox.value for checkbox in form.target when checkbox.checked)
+  targets = (checkbox.value for checkbox in form.targets when checkbox.checked)
   filterList = for target in targets
     {
       attr: target
@@ -70,20 +87,24 @@ SearchInput = ({search}) ->
         </div>
         <div class="col-9">
           <input id="search-string" class="form-input" type="text" name="string"
-             praceholder="ユーザー名 or 名前" onkeyup={onchangeChild} />
+            praceholder="ユーザー名 or 名前" onkeyup={onchangeChild}
+            oncreate={(element) -> element.focus()} />
         </div>
       </div>
       <div class="form-group">
         <div class="col-3">
-          <label class="form-label" for="search-matching">一致形式</label>
+          <label class="form-label" for="search-matching">検索方式</label>
         </div>
         <div class="col-9">
           <select id="search-matching" class="form-select" name="matching"
             onchange={onchangeChild}>
-            <option value="exact">完全</option>
-            <option value="forward" selected>前方</option>
-            <option value="partial">部分</option>
-            <option value="backward">後方</option>
+            {
+              for matching in MATCHINGS
+                <option key={matching.id} value={matching.id}
+                  selected={matching.selected}>
+                  {matching.name}
+                </option>
+            }
           </select>
         </div>
       </div>
@@ -93,13 +114,13 @@ SearchInput = ({search}) ->
         </div>
         <div class="col-9">
           {
-            for target in TARGETS
-              <label key={target.id} class="form-checkbox">
-                <input id={"search-target-#{target.id}"} type="checkbox"
-                  name="target" value={target.attr} checked
+            for attribute in ATTRIBUTES
+              <label key={attribute.id} class="form-checkbox">
+                <input id={"search-targets-#{attribute.id}"} type="checkbox"
+                  name="targets" value={attribute.attr} checked
                   onchange={onchangeChild} />
                   <i class="form-icon"></i>
-                  {target.name}
+                  {attribute.name}
               </label>
           }
         </div>
@@ -107,34 +128,44 @@ SearchInput = ({search}) ->
     </fieldset>
   </form>
 
-ResultItem = ({key, result, displayUser}) ->
-  <tr key={key} onclick={-> displayUser(result.dn)}>
-    <td>{result.uid}</td>
-    <td>{result.name}</td>
+Entry = ({key, entry, displayUser}) ->
+  <tr key={key} onclick={(event) -> displayUser(entry.dn)}>
+    {
+      for attribute in ATTRIBUTES
+        <td key={attribute.id}>
+          {entry[attribute.attr]}
+        </td>
+    }
   </tr>
 
-Results = ({results, displayUser}) ->
+EntryTable = ({entries, displayUser}) ->
   <table>
     <thead>
       <tr>
-        <th>アカウント</th>
-        <th>名前</th>
+        {
+          for attribute in ATTRIBUTES
+            <th key={attribute.id}>
+              {attribute.name}
+            </th>
+        }
       </tr>
     </thead>
     <tbody>
       {
-        for result in results
-          <ResultItem key={relust.uid} result={result}
-            displayUser={displayUser} />
+        for entry in entries
+          <Entry key={relust.uid} entry={entry} displayUser={displayUser} />
       }
     </tbody>
   </table>
 
-export Search = ({filterText, results, search, displayUser, watchResult}) ->
-  <div id="search" oncreate={watchResult}>
+export Search = ({filter, entries, error, search, displayUser, watchSearch}) ->
+  <div key="search" id="search" oncreate={->
+    console.log 'search created'
+    watchSearch()
+  }>
     <SearchInput search={search}/>
-    <p>{filterText}</p>
-    <Results results={results} displayUser={displayUser} />
+    <p>{filter or error}</p>
+    <EntryTable entries={entries} displayUser={displayUser} />
   </div>
 
 export default {
