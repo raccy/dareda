@@ -25,7 +25,7 @@ createWindow = ->
     protocol: 'file:'
     slashes: true
   ))
-  mainWindow.webContents.openDevTools()
+  # mainWindow.webContents.openDevTools()
 
   mainWindow.on 'closed', ->
     app.quit()
@@ -38,6 +38,7 @@ createWindow = ->
       search: dn
       slashes: true
     ))
+    # userWindow.webContents.openDevTools()
 
 app.on 'ready', createWindow
 
