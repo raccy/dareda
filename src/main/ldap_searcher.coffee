@@ -7,7 +7,6 @@ export default class LdapSearcher
     ipcMain.on 'login', @login
     ipcMain.on 'search', @search
     ipcMain.on 'user', @user
-    ipcMain.on 'groups', @groups
 
   login: (event, {@username, @password}) =>
     @dn = @getUserDn(@username)
@@ -75,9 +74,43 @@ export default class LdapSearcher
             error: err
           }
 
-  user: (event, userDn) =>
-
-  groups: (event, group) ->
+  user: (event, {dn}) =>
+    options = scope: 'base', sizeLimit: 1
+    @client.bind @dn, @password, (err) =>
+      if err instanceof ldap.LDAPError
+        event.sender.send 'user-result', {
+          defaultResult...
+          error: err.message()
+        }
+        return
+      entries = []
+      @client.search dn, options, (err, res) ->
+        if err instanceof ldap.LDAPError
+          event.sender.send 'user-result', {
+            defaultResult...
+            error: err.message()
+          }
+          return
+        error = undefined
+        res.on 'searchEntry', (entry) ->
+          entryObj = {dn: entry.objectName}
+          for attr in entry.attributes
+            entryObj[attr.type] = attr.vals
+          entries.push(entryObj)
+        res.on 'error', (err) ->
+          error = err
+        res.on 'end', (result) ->
+          if entries.length > 0
+            event.sender.send 'user-result', {
+              defaultResult...
+              user: entries[0]
+              error: err
+            }
+          else
+            event.sender.send 'user-result', {
+              defaultResult...
+              error: 'not found'
+            }
 
   createFilter: (filterList) ->
     list = for filter in filterList

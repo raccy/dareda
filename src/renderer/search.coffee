@@ -23,6 +23,7 @@ export actions = {
     return
 
   displayUser: (dn) -> (state) ->
+    console.log "dispalyUser: #{dn}"
     ipcRenderer.send 'display-user', dn
     return
 
@@ -114,8 +115,9 @@ SearchInput = ({search}) ->
             for attribute in ATTRIBUTES
               <label key={attribute.id} class="form-checkbox">
                 <input id={"search-targets-#{attribute.id}"} type="checkbox"
-                  name="targets" value={attribute.attr} checked
-                  onchange={onchangeChild} />
+                  name="targets" value={attribute.attr}
+                  onchange={onchangeChild}
+                  oncreate={(element) -> element.checked = true} />
                   <i class="form-icon"></i>
                   {attribute.name}
               </label>

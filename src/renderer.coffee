@@ -20,7 +20,7 @@ view = (state, actions) ->
       entries={state.searchEntries}
       error={state.searchError}
       search={actions.search}
-      dispalyUser={actions.displayUser}
+      displayUser={actions.displayUser}
       watchSearch={actions.watchSearch}
     />
   else

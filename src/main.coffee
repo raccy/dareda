@@ -1,4 +1,4 @@
-import {app, BrowserWindow} from 'electron'
+import {app, BrowserWindow, ipcMain} from 'electron'
 
 import path from 'path'
 import url from 'url'
@@ -28,7 +28,16 @@ createWindow = ->
   mainWindow.webContents.openDevTools()
 
   mainWindow.on 'closed', ->
-    mainWindow = null
+    app.quit()
+
+  ipcMain.on 'display-user', (event, dn) ->
+    userWindow = new BrowserWindow(width: 800, height: 600, parent: mainWindow)
+    userWindow.loadURL(url.format(
+      pathname: path.join(__dirname, 'user.html')
+      protocol: 'file:'
+      search: dn
+      slashes: true
+    ))
 
 app.on 'ready', createWindow
 
