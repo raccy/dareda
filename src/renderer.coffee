@@ -1,5 +1,4 @@
 import {h, app} from 'hyperapp'
-import {ipcRenderer} from 'electron'
 import login, {Login} from './renderer/login'
 import search, {Search} from './renderer/search'
 

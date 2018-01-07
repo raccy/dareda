@@ -75,6 +75,11 @@ export default class LdapSearcher
           }
 
   user: (event, {dn}) =>
+    defaultResult = {
+      dn: dn
+      user: undefined
+      error: undefined
+    }
     options = scope: 'base', sizeLimit: 1
     @client.bind @dn, @password, (err) =>
       if err instanceof ldap.LDAPError
