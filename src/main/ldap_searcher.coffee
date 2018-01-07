@@ -61,17 +61,14 @@ export default class LdapSearcher
           return
         error = undefined
         res.on 'searchEntry', (entry) ->
-          console.log(entry)
           entryObj = {dn: entry.objectName}
           for attr in entry.attributes
             if attributes.includes(attr.type)
               entryObj[attr.type] = attr.vals
           entries.push(entryObj)
         res.on 'error', (err) ->
-          console.log(err)
           error = err
         res.on 'end', (result) ->
-          console.log(entries)
           event.sender.send 'search-result', {
             defaultResult...
             entries: entries
@@ -123,14 +120,11 @@ export default class LdapSearcher
       new ldap.OrFilter(filters: list)
 
   ldapLogin: ->
-    console.log("login: #{@dn}")
     new Promise((resolve, reject) =>
       @client.bind @dn, @password, (err) =>
         if err instanceof ldap.LDAPError
-          console.log("faild to login")
           reject(err)
         else
-          console.log("succeeded to login")
           resolve(@dn)
     )
 

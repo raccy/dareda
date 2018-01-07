@@ -19,7 +19,6 @@ export actions = {
     {searchResults: searchResults}
 
   search: (filterList) -> (state, actions) ->
-    console.log filterList
     ipcRenderer.send 'search', filterList: filterList
     return
 
@@ -28,9 +27,7 @@ export actions = {
     return
 
   watchSearch: -> (state, actions) ->
-    console.log 'watch search'
     ipcRenderer.on 'search-result', (event, arg) ->
-      console.log arg
       actions.updateSearch(arg)
     return
 }
@@ -159,10 +156,7 @@ EntryTable = ({entries, displayUser}) ->
   </table>
 
 export Search = ({filter, entries, error, search, displayUser, watchSearch}) ->
-  <div key="search" id="search" oncreate={->
-    console.log 'search created'
-    watchSearch()
-  }>
+  <div key="search" id="search" oncreate={watchSearch}>
     <SearchInput search={search}/>
     <p>{filter or error}</p>
     <EntryTable entries={entries} displayUser={displayUser} />
