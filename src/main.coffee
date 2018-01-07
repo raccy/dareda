@@ -19,7 +19,12 @@ fs.readFile path.join(__dirname, '..', 'dareda.yml'), (err, data) ->
 mainWindow = null
 
 createWindow = ->
-  mainWindow = new BrowserWindow(width: 800, height: 600)
+  mainWindow = new BrowserWindow(
+    width: 800
+    height: 600
+    titleBarStyle: ''
+  )
+  mainWindow.setMenu(null)
   mainWindow.loadURL(url.format(
     pathname: path.join(__dirname, 'index.html')
     protocol: 'file:'
@@ -31,7 +36,12 @@ createWindow = ->
     app.quit()
 
   ipcMain.on 'display-user', (event, dn) ->
-    userWindow = new BrowserWindow(width: 800, height: 600, parent: mainWindow)
+    userWindow = new BrowserWindow(
+      width: 800
+      height: 600
+      parent: mainWindow
+    )
+    userWindow.setMenu(null)
     userWindow.loadURL(url.format(
       pathname: path.join(__dirname, 'user.html')
       protocol: 'file:'

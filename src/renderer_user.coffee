@@ -26,14 +26,22 @@ view = (state, actions) ->
   <main class="container" oncreate={oncreate}>
     <div>
       <p>{state.dn ? '読み込み中'}</p>
-      <table>
-        {
-          for key, value of state.user ? []
-            <tr key={key}>
-              <th>{key}</th>
-              <td>{value}</td>
-            </tr>
-        }
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>属性</th>
+            <th>値</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            for key, value of state.user ? []
+              <tr key={key}>
+                <th>{key}</th>
+                <td>{value}</td>
+              </tr>
+          }
+        </tbody>
       </table>
     </div>
   </main>

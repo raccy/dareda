@@ -70,7 +70,6 @@ export Login = ({error, status, login, watchLogin}) ->
     event.target.password.value = ''
   disabled = status != 'waiting'
   <div key="login" id="login" oncreate={watchLogin}>
-    <h2>ログイン</h2>
     <LoginError error={error} />
     <form class="form-horizontal" onsubmit={onsubmit}>
       <fieldset>

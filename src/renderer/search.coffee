@@ -138,7 +138,7 @@ Entry = ({key, entry, displayUser}) ->
   </tr>
 
 EntryTable = ({entries, displayUser}) ->
-  <table>
+  <table class="table table-striped table-hover">
     <thead>
       <tr>
         {
