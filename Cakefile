@@ -8,9 +8,12 @@ mkdir = util.promisify(fs.mkdir)
 stat = util.promisify(fs.stat)
 copyFile = util.promisify ({src, dest}, callback) ->
   fs.copyFile(src, dest, callback)
+rename = util.promisify ({oldPath, newPath}, callback) ->
+  fs.rename(oldPath, newPath, callback)
 
 srcDir = 'src'
 dstDir = 'app'
+pkgDir = 'pkg'
 
 mkdirIfNotExists = (path) ->
   try
@@ -118,3 +121,26 @@ task 'run', 'run electron', (options) ->
   ps.on 'error', (error) ->
     console.error(String(error))
     throw error
+
+task 'package', 'create package', (options) ->
+  electronDist = path.join('node_modules', 'electron', 'dist')
+  {stdout, stderr} = await exec("yarn run ncp \
+      #{electronDist} \
+      #{pkgDir}")
+  console.log(stdout) if stdout?
+  console.warn(stderr) if stderr?
+  appAsar = path.join(pkgDir, 'resources', 'app.asar')
+  {stdout, stderr} = await exec("yarn run asar \
+      pack \
+      #{dstDir} \
+      #{appAsar}")
+  console.log(stdout) if stdout?
+  console.warn(stderr) if stderr?
+  await rename({
+    oldPath: path.join(pkgDir, 'electron.exe')
+    newPath: path.join(pkgDir, 'dareda.exe')
+  })
+  await copyFile({
+    src: 'dareda.yml'
+    dest: path.join(pkgDir, 'resources', 'dareda.yml')
+  })
