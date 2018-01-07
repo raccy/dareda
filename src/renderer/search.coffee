@@ -153,7 +153,7 @@ EntryTable = ({entries, displayUser}) ->
     <tbody>
       {
         for entry in entries
-          <Entry key={relust.uid} entry={entry} displayUser={displayUser} />
+          <Entry key={entry.uid} entry={entry} displayUser={displayUser} />
       }
     </tbody>
   </table>

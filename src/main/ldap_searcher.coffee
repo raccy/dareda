@@ -39,13 +39,17 @@ export default class LdapSearcher
 
     attributes = ['uid', 'displayName', 'displayName;lang-ja',
       'displayName;lang-ja;phonetic']
-    options = filter: filter, attributes: attributes, sizeLimit: 10
+    options =
+      filter: filter
+      scope: 'one'
+      attributes: attributes
+      sizeLimit: 10
     @client.bind @dn, @password, (err) =>
       if err instanceof ldap.LDAPError
         event.sender.send 'search-result', {
           defaultResult...
           error: err.message()
-      }
+        }
         return
       entries = []
       @client.search @userBase, options, (err, res) ->
@@ -55,14 +59,23 @@ export default class LdapSearcher
             error: err.message()
           }
           return
+        error = undefined
         res.on 'searchEntry', (entry) ->
           console.log(entry)
-          entries.push(entry)
+          entryObj = {dn: entry.objectName}
+          for attr in entry.attributes
+            if attributes.includes(attr.type)
+              entryObj[attr.type] = attr.vals
+          entries.push(entryObj)
+        res.on 'error', (err) ->
+          console.log(err)
+          error = err
         res.on 'end', (result) ->
           console.log(entries)
           event.sender.send 'search-result', {
             defaultResult...
             entries: entries
+            error: err
           }
 
   user: (event, userDn) =>
