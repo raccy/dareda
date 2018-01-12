@@ -44,21 +44,20 @@ export default class LdapSearcher
       attributes: attributes
       sizeLimit: 10
     @client.bind @dn, @password, (err) =>
-      if err instanceof ldap.LDAPError
+      if err?
         event.sender.send 'search-result', {
           defaultResult...
           error: err.message()
         }
         return
-      entries = []
       @client.search @userBase, options, (err, res) ->
-        if err instanceof ldap.LDAPError
+        if err?
           event.sender.send 'search-result', {
             defaultResult...
             error: err.message()
           }
           return
-        error = undefined
+        entries = []
         res.on 'searchEntry', (entry) ->
           entryObj = {dn: entry.objectName}
           for attr in entry.attributes
@@ -66,12 +65,15 @@ export default class LdapSearcher
               entryObj[attr.type] = attr.vals
           entries.push(entryObj)
         res.on 'error', (err) ->
-          error = err
+          event.sender.send 'search-result', {
+            defaultResult...
+            entries: entries
+            error: err.toString()
+          }
         res.on 'end', (result) ->
           event.sender.send 'search-result', {
             defaultResult...
             entries: entries
-            error: err
           }
 
   user: (event, {dn}) =>
@@ -82,34 +84,42 @@ export default class LdapSearcher
     }
     options = scope: 'base', sizeLimit: 1
     @client.bind @dn, @password, (err) =>
-      if err instanceof ldap.LDAPError
+      if err?
         event.sender.send 'user-result', {
           defaultResult...
           error: err.message()
         }
         return
-      entries = []
       @client.search dn, options, (err, res) ->
-        if err instanceof ldap.LDAPError
+        if err?
           event.sender.send 'user-result', {
             defaultResult...
             error: err.message()
           }
           return
-        error = undefined
+        entries = []
         res.on 'searchEntry', (entry) ->
           entryObj = {dn: entry.objectName}
           for attr in entry.attributes
             entryObj[attr.type] = attr.vals
           entries.push(entryObj)
         res.on 'error', (err) ->
-          error = err
+          if entries.length > 0
+            event.sender.send 'user-result', {
+              defaultResult...
+              user: entries[0]
+              error: err.toString()
+            }
+          else
+            event.sender.send 'user-result', {
+              defaultResult...
+              error: err.toString()
+            }
         res.on 'end', (result) ->
           if entries.length > 0
             event.sender.send 'user-result', {
               defaultResult...
               user: entries[0]
-              error: err
             }
           else
             event.sender.send 'user-result', {
