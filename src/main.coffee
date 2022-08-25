@@ -14,6 +14,8 @@ fs.readFile path.join(__dirname, '..', 'dareda.yml'), (err, data) ->
     url: config.ldap.url
     userBase: config.ldap.user_base
     groupBase: config.ldap.group_base
+    bindDn: config.ldap.bind_dn
+    bindPassword: config.ldap.bind_password
   })
 
 mainWindow = null

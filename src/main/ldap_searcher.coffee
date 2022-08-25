@@ -2,7 +2,7 @@ import {ipcMain} from 'electron'
 import ldap from 'ldapjs'
 
 export default class LdapSearcher
-  constructor: ({@url, @userBase, @groupBase}) ->
+  constructor: ({@url, @userBase, @groupBase, @bindDn, @bindPassword}) ->
     @client = ldap.createClient(url: @url)
     ipcMain.on 'login', @login
     ipcMain.on 'search', @search
@@ -13,6 +13,7 @@ export default class LdapSearcher
     try
       await @ldapLogin()
       event.sender.send 'login-result', status: 'success'
+      [@dn, @password] = [@bindDn, @bindPassword] if @bindDn
     catch error
       switch
         when error instanceof ldap.InvalidCredentialsError
@@ -101,7 +102,8 @@ export default class LdapSearcher
         res.on 'searchEntry', (entry) ->
           entryObj = {dn: entry.objectName}
           for attr in entry.attributes
-            entryObj[attr.type] = attr.vals
+            unless /password/i.test(attr.type)
+              entryObj[attr.type] = attr.vals
           entries.push(entryObj)
         res.on 'error', (err) ->
           if entries.length > 0

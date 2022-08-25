@@ -2,3 +2,5 @@ ldap:
   url: "ldap://localhost"
   user_base: ou=People,dc=example,dc=jp
   group_base: ou=Group,dc=example,dc=jp
+  bind_dn: cn=bind,dc=example,dc=jp
+  bind_password: password
